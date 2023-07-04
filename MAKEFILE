@@ -1,0 +1,42 @@
+# Variáveis
+CC = gcc
+CFLAGS = -Wall -Wextra -I include -fopenmp
+LDFLAGS =
+
+# Diretórios
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+INSTALL_DIR = /usr/local/bin
+
+# Arquivos fonte e objeto
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+
+# Nome do executável
+EXECUTABLE = $(BIN_DIR)/meu_projeto
+
+# Regra default
+all: $(EXECUTABLE)
+
+# Regra de compilação dos objetos
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regra de linkagem
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@
+
+# Funcoes para o make
+
+# Limpar arquivos objeto
+clean:
+	rm -rf $(OBJ_DIR)/*.o
+
+# Instalar o executável
+install:
+	cp $(EXECUTABLE) $(INSTALL_DIR)
+
+# Desinstalar o executável
+uninstall:
+	rm -f $(INSTALL_DIR)/meu_projeto
