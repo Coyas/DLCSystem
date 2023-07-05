@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
     fgets(message, BUFFER_SIZE, stdin);
 
     // Concatena o ID e a mensagem em uma única string
-    strstrip(id);
     strcat(id, ": ");
     strcat(id, message);
 
