@@ -7,12 +7,95 @@
 #include <unistd.h>
 
 #define BUFFER_SIZE 1024
+#define CLIENTS_MAX 2
+
+typedef struct {
+    int client_socket;
+    char client_id[32];
+    char message[BUFFER_SIZE];
+} ClientInfo;
+
+void printClientInfo(const ClientInfo* client) {
+    printf("ID do cliente: %s\n", client->client_id);
+    printf("Socket do cliente: %d\n", client->client_socket);
+    printf("Mensagem do cliente: %s\n", client->message);
+}
+void handle_client(int client_socket, ClientInfo* client_list, int* num_clients) {
+    char buffer[BUFFER_SIZE];
+    ssize_t nread;
+
+    // Recebe o ID do cliente
+    nread = read(client_socket, buffer, sizeof(buffer));
+    if (nread < 0) {
+        perror("ERRO ao ler do socket");
+        return;
+    }
+    buffer[nread] = '\0';
+
+    // Verifica se há espaço para mais clientes
+    if (*num_clients < 2) {
+        // Inicializa a estrutura do cliente
+        ClientInfo* client = &client_list[*num_clients];
+        client->client_socket = client_socket;
+        strcpy(client->client_id, buffer);
+        memset(client->message, 0, sizeof(client->message)); // Inicializa a mensagem com zeros
+        (*num_clients)++;
+
+        // Imprime as informações do cliente
+        printf("ID do cliente: %s\n", client->client_id);
+        printf("Socket do cliente: %d\n", client->client_socket);
+        printf("Mensagem do cliente: %s\n", client->message);
+    } else {
+        printf("Número máximo de clientes atingido. Conexão rejeitada.\n");
+        return;
+    }
+
+    // Aqui você pode adicionar a lógica para lidar com as mensagens do cliente
+
+    // Exemplo: envia uma mensagem de confirmação ao cliente
+    char message[] = "Dados recebidos com sucesso";
+    write(client_socket, message, sizeof(message));
+}
+
+
+void handle_client2(int client_socket, ClientInfo* client_list, int* num_clients) {
+    char buffer[BUFFER_SIZE];
+    ssize_t nread;
+
+    // Recebe o ID do cliente
+    nread = read(client_socket, buffer, sizeof(buffer));
+    if (nread < 0) {
+        perror("ERRO ao ler do socket");
+        return;
+    }
+    buffer[nread] = '\0';
+
+    // Armazena o ID do cliente na estrutura de dados
+    if (*num_clients < CLIENTS_MAX) {
+        ClientInfo* client = &client_list[*num_clients];
+        client->client_socket = client_socket;
+        strcpy(client->client_id, buffer);
+        strcpy(client->message, buffer);
+        (*num_clients)++;
+        printf("Cliente conectado: ID=%s\n", client->client_id);
+    } else {
+        printf("Número máximo de clientes atingido. Conexão rejeitada.\n");
+        return;
+    }
+
+    // Aqui você pode adicionar a lógica para lidar com as mensagens do cliente
+
+    // Exemplo: envia uma mensagem de confirmação ao cliente
+    char message[] = "Dados recebidos com sucesso";
+    write(client_socket, message, sizeof(message));
+}
 
 int main(int argc, char *argv[])
 {
-    int sockfd, newsockfd, portno, clilen, nread;
-    char buffer[BUFFER_SIZE];
+    int sockfd, newsockfd, portno, clilen;
     struct sockaddr_in serv_addr, cli_addr;
+    ClientInfo client_list[CLIENTS_MAX];
+    int num_clients = 0;
 
     // Cria um novo socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -22,7 +105,7 @@ int main(int argc, char *argv[])
     }
 
     // Limpa a estrutura de endereço do servidor
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    bzero((char *)&serv_addr, sizeof(serv_addr));
 
     // Verifica se há argumentos suficientes
     if (argc > 1) {
@@ -31,7 +114,7 @@ int main(int argc, char *argv[])
         printf("SERVIDOR: listen na porta %d\n", portno);
     } else {
         // Caso contrário, atribui o valor padrão
-        fprintf(stderr, "ERRO: Porta não especificada, atribuindo porta padrao 8080\n");
+        fprintf(stderr, "ERRO: Porta não especificada, atribuindo porta padrão 8080\n");
         portno = 8080;
     }
 
@@ -41,7 +124,7 @@ int main(int argc, char *argv[])
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     // Associa o socket ao endereço e porta especificados
-    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("ERRO ao realizar o bind");
         exit(1);
     }
@@ -49,11 +132,12 @@ int main(int argc, char *argv[])
     // Inicia a escuta por conexões
     listen(sockfd, 5);
 
+    //printClientInfo(&client_list);
     while (1) {
         clilen = sizeof(cli_addr);
 
         // Aceita uma nova conexão
-        newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
         if (newsockfd < 0) {
             perror("ERRO ao aceitar a conexão");
             exit(1);
@@ -69,20 +153,8 @@ int main(int argc, char *argv[])
         if (pid == 0) { // Processo filho
             close(sockfd);
 
-            bzero(buffer, 1024);
-
-            // Recebe e envia dados pela conexão
-            while ((nread = read(newsockfd, buffer, sizeof(buffer))) > 0) {
-                printf("Recebido: %s", buffer);
-                //write(newsockfd, buffer, nread);
-                write(newsockfd, "dados recebido com sucesso", 27);
-                bzero(buffer, 1024);
-            }
-
-            if (nread < 0) {
-                perror("ERRO ao ler do socket");
-                exit(1);
-            }
+            // Lida com a conexão do cliente
+            handle_client(newsockfd, client_list, &num_clients);
 
             // Fecha o socket da conexão
             close(newsockfd);
@@ -90,6 +162,8 @@ int main(int argc, char *argv[])
         } else { // Processo pai
             close(newsockfd);
         }
+
+        
     }
 
     // Fecha o socket principal
