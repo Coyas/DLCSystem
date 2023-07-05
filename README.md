@@ -8,7 +8,7 @@ Este systema propem uma nova abordagem do uso dos sistemas de chat, baseado prin
 
 Para compilar o projeto dev ser usado o makefile. Mas tambem pode-se fazer usando o modo padrao.
 
-O sistema siscrono permite conectar e enviar mensagens continuamente ate que o utilizador termine a conexao.
+O sistema sincrono permite conectar e enviar mensagens continuamente ate que o utilizador termine a conexao.
 
 O sistema Assincrono permite conectar, enviar uma mensagem e sair (terminar a execuçao do cliente).
 
