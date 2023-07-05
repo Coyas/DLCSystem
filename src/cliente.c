@@ -12,12 +12,13 @@
 //#define SERVER_IP "127.0.0.1"
 //#define PORT 8080
 #define BUFFER_SIZE 1024
+#define USER_SIZE 50
 #define MAX_IP_LENGTH 16
 
 int main(int argc, char *argv[]) {
     int sockfd, PORT;
     struct sockaddr_in server_address;
-    char buffer[BUFFER_SIZE], SERVER_IP[MAX_IP_LENGTH];;
+    char buffer[BUFFER_SIZE], SERVER_IP[MAX_IP_LENGTH], id[USER_SIZE], message[BUFFER_SIZE];
 
     // // Verifica se há argumentos suficientes
     if (argc >= 2) {
@@ -71,11 +72,21 @@ int main(int argc, char *argv[]) {
 
     printf("Conexão estabelecida com o servidor.\n");
 
-    // Envia dados para o servidor
-    printf("Digite uma mensagem para enviar ao servidor: ");
-    fgets(buffer, BUFFER_SIZE, stdin);
+    // Solicita ao usuário um ID
+    printf("Digite um ID para se identificar: ");
+    fgets(id, USER_SIZE, stdin);
 
-    ssize_t num_bytes_sent = send(sockfd, buffer, strlen(buffer), 0);
+    // Solicita ao usuário uma mensagem
+    printf("Digite uma mensagem para enviar ao servidor: ");
+    fgets(message, BUFFER_SIZE, stdin);
+
+    // Concatena o ID e a mensagem em uma única string
+    strstrip(id);
+    strcat(id, ": ");
+    strcat(id, message);
+
+    // Envia o ID e a mensagem concatenados ao servidor
+    ssize_t num_bytes_sent = send(sockfd, id, strlen(id), 0);
     if (num_bytes_sent < 0) {
         perror("Erro ao enviar dados para o servidor");
         exit(EXIT_FAILURE);
