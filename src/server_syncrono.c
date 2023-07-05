@@ -15,11 +15,6 @@ typedef struct {
     char message[BUFFER_SIZE];
 } ClientInfo;
 
-void printClientInfo(const ClientInfo* client) {
-    printf("ID do cliente: %s\n", client->client_id);
-    printf("Socket do cliente: %d\n", client->client_socket);
-    printf("Mensagem do cliente: %s\n", client->message);
-}
 void handle_client(int client_socket, ClientInfo* client_list, int* num_clients) {
     char buffer[BUFFER_SIZE];
     ssize_t nread;
@@ -33,7 +28,7 @@ void handle_client(int client_socket, ClientInfo* client_list, int* num_clients)
     buffer[nread] = '\0';
 
     // Verifica se há espaço para mais clientes
-    if (*num_clients < 2) {
+    if (*num_clients < CLIENTS_MAX) {
         // Inicializa a estrutura do cliente
         ClientInfo* client = &client_list[*num_clients];
         client->client_socket = client_socket;
@@ -57,41 +52,7 @@ void handle_client(int client_socket, ClientInfo* client_list, int* num_clients)
     write(client_socket, message, sizeof(message));
 }
 
-
-void handle_client2(int client_socket, ClientInfo* client_list, int* num_clients) {
-    char buffer[BUFFER_SIZE];
-    ssize_t nread;
-
-    // Recebe o ID do cliente
-    nread = read(client_socket, buffer, sizeof(buffer));
-    if (nread < 0) {
-        perror("ERRO ao ler do socket");
-        return;
-    }
-    buffer[nread] = '\0';
-
-    // Armazena o ID do cliente na estrutura de dados
-    if (*num_clients < CLIENTS_MAX) {
-        ClientInfo* client = &client_list[*num_clients];
-        client->client_socket = client_socket;
-        strcpy(client->client_id, buffer);
-        strcpy(client->message, buffer);
-        (*num_clients)++;
-        printf("Cliente conectado: ID=%s\n", client->client_id);
-    } else {
-        printf("Número máximo de clientes atingido. Conexão rejeitada.\n");
-        return;
-    }
-
-    // Aqui você pode adicionar a lógica para lidar com as mensagens do cliente
-
-    // Exemplo: envia uma mensagem de confirmação ao cliente
-    char message[] = "Dados recebidos com sucesso";
-    write(client_socket, message, sizeof(message));
-}
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int sockfd, newsockfd, portno, clilen;
     struct sockaddr_in serv_addr, cli_addr;
     ClientInfo client_list[CLIENTS_MAX];
@@ -109,7 +70,7 @@ int main(int argc, char *argv[])
 
     // Verifica se há argumentos suficientes
     if (argc > 1) {
-        // O terceiro argumento é a porta do servidor
+        // O segundo argumento é a porta do servidor
         portno = atoi(argv[1]);
         printf("SERVIDOR: listen na porta %d\n", portno);
     } else {
@@ -132,7 +93,6 @@ int main(int argc, char *argv[])
     // Inicia a escuta por conexões
     listen(sockfd, 5);
 
-    //printClientInfo(&client_list);
     while (1) {
         clilen = sizeof(cli_addr);
 
@@ -162,8 +122,6 @@ int main(int argc, char *argv[])
         } else { // Processo pai
             close(newsockfd);
         }
-
-        
     }
 
     // Fecha o socket principal
