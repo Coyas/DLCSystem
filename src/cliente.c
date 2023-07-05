@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -18,30 +19,36 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server_address;
     char buffer[BUFFER_SIZE], SERVER_IP[MAX_IP_LENGTH];;
 
-    if (argc < 2)
-	{
-	 fprintf(stderr,"ERROR, nao foi especificado a porta");
-	 exit(1);
-	}
-
-    
-    // Verifica se há argumentos suficientes
+    // // Verifica se há argumentos suficientes
     if (argc >= 2) {
-        // O segundo argumento é o IP do servidor
-        strcpy(SERVER_IP, argv[1]);
-    } else {
-        // Caso contrário, atribui o valor padrão
-        strcpy(SERVER_IP, "127.0.0.1");
-    }
+        // O segundo argumento pode ser o IP ou a porta do servidor
+        if (argc >= 3) {
+            // O segundo argumento é o IP do servidor
+            strcpy(SERVER_IP, argv[1]);
 
-    // Verifica se há argumentos suficientes
-    if (argc >= 3) {
-        // O terceiro argumento é a porta do servidor
-        PORT = atoi(argv[2]);
+            // O terceiro argumento é a porta do servidor
+            PORT = atoi(argv[2]);
+        } else {
+            // Caso contrário, verifica se o segundo argumento é numérico (porta)
+            // ou se é o IP do servidor
+            if (isdigit(*argv[1])) {
+                // É um valor numérico, assume como a porta do servidor
+                strcpy(SERVER_IP, "127.0.0.1");
+                PORT = atoi(argv[1]);
+            } else {
+                // É o IP do servidor, assume a porta padrão
+                strcpy(SERVER_IP, argv[1]);
+                PORT = 8080;
+            }
+        }
     } else {
-        // Caso contrário, atribui o valor padrão
+        // Nenhum argumento fornecido, assume IP e porta padrão
+        strcpy(SERVER_IP, "127.0.0.1");
         PORT = 8080;
     }
+
+
+    printf("SERVIDOR: <%s> <%d>\n", SERVER_IP, PORT);
 	
 
     // Cria um socket TCP (SOCK_STREAM)
