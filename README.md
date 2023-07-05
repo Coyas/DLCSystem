@@ -43,3 +43,11 @@ como usar:
 server                    // Usará o IP da maquina e a porta padrão
 
 server 8080               // Usará o IP da maquina e a porta fornecida
+
+
+## Proximas Funcionalidades
+
+* criar uma UI feito em java/javaFX
+* adicionar opcao de enviar ficheiro
+* criptografar todas as ligaçoes usando o [safenetwork](https://github.com/Coyas/self_encryption)
+* implementar um banco de dados (de preferenncia distribuido <cocrochDB>)
