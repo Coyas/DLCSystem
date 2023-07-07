@@ -67,7 +67,7 @@ com criptografia OpenSSL:
 gcc src/utils/save_msg_criptografada_openssl.c -o bin/save_msg_criptografada_openssl -lsqlite3 -lcrypto
 ```
 
-![Link Name]([Link URL](https://pasteboard.co/QOEjL9SxcFpm.png))  
+![Link Name](https://pasteboard.co/QOEjL9SxcFpm.png)
 
 ## Proximas Funcionalidades
 
