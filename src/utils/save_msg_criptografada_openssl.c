@@ -70,6 +70,7 @@ int insertMessage(const char *user, const char *message) {
 
 
 // o famoso teste unitario
+// mas este estou usando o main, nao se faz tem q sair
 int main() {
     const char *user = "coyas";
     const char *message = "Hello, world!";
